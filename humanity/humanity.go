@@ -1,98 +1,142 @@
 /*  This chaincode represents a humanity point system.....
-    TODO:add more description
-*/
+	    TODO:add more description
+	*/
 
-package main
+	package main
 
-import (
-	"math/rand"
+	import (
+		"math/rand"
 	"time"
 	"errors"
 	"fmt"
 	"encoding/json"
 	"strconv"
 	"github.com/hyperledger/fabric/core/chaincode/shim"
-)
+	)
 
-//predefined points for each level of thank:
-const (
-	small int = 1 << iota //1
-	medium = 5 * iota //5
-	large = 5 * iota //10
-)
+	//predefined points for each level of thank:
+	const (
+		small int = 1 << iota	//1
+		medium = 5 * iota	//5
+		large = 5 * iota	//10
+	)
 
-//Each user has an ID a balance and an array of thanks
-//users can gain points by receiving thanks valued at different level (small, medium, large)
-type entity struct {
-	UserID    string `json:"name"`
-	Balance   int `json:"balance"`   //points received by thanks
-	ThankList []thank `json:"thank"` //list of the thanks received
-}
+	//Each user has an ID a balance and an array of thanks
+	//users can gain points by receiving thanks valued at different level (small, medium, large)
+	type entity struct {
+		UserID    string `json:"name"`
+		Balance   int `json:"balance"`		//points received by thanks
+		ThankList []thank `json:"thank"`	//list of the thanks received
+	}
 
-//Each thank contains:
-//- the name of the "giver"
-//- one of the three types of thanks: ta, thanks, bigthanks
-//- and a message stating their good deed
-type thank struct{
-	Thanker    string `json:"name"`    //person who gives the "thank"
-	ThankType  string `json:"type"`  //number of points given
-	Message    string `json:"message"` //the reason for giving thanks
-}
+	//keyList to contain all keys for the users, so we could select one randomly
+	type keyList struct {
+		Keys []string `json:"keys"`
+	}
 
-//AddThank method adds a thank to the slice of thanks inside entity struct.
-func (e *entity) AddThank(t thank) []thank {
-	e.ThankList = append(e.ThankList, t)
-	return e.ThankList
-}
+	//Each thank contains:
+	//- the name of the "giver"
+	//- one of the three types of thanks: ta, thanks, bigthanks
+	//- and a message stating their good deed
+	type thank struct{
+		Thanker    string `json:"name"`		//person who gives the "thank"
+		ThankType  string `json:"type"`		//number of points given
+		Message    string `json:"message"`	//the reason for giving thanks
+	}
 
-//HumanityChaincode is the receiver for chaincode functions
-type HumanityChaincode struct{
-}
+	//AddThank method adds a thank to the slice of thanks inside entity struct.
+	func (e *entity) AddThank(t thank) []thank {
+		e.ThankList = append(e.ThankList, t)
+		return e.ThankList
+	}
 
-//Init function to initialize chaincode add entities and points to start with to the ledger.
-//TODO: check the work for more entities
-func (t *HumanityChaincode) Init(stub *shim.ChaincodeStub, function string, args []string) ([]byte, error) {
-	var userID string // name of the user to be registered on the chain
-	var pointsToAdd int //points to start with (default=0)
+	 //AddKey method adds a key to ....
+        //func (kl *keyList) AddKey(k string) []string {
+	//	kl.Keys = append(kl.Keys, k)
+	//	return kl.Keys
+	//}
+
+
+	//HumanityChaincode is the receiver for chaincode functions
+	type HumanityChaincode struct{
+	}
+
+	//Init function to initialize chaincode add entities and points to start with to the ledger.
+	//TODO: check the work for more entities
+	func (t *HumanityChaincode) Init(stub *shim.ChaincodeStub, function string, args []string) ([]byte, error) {
+	var userID string       // name of the user to be registered on the chain
+	var pointsToAdd int     //points to start with (default=0)
 	var err error
 
 	//get attributes from args
 	if len(args) %2 != 0  {
-		return nil, errors.New("Incorrect number of args. Needs to be even: (ID, points)")
+	return nil, errors.New("Incorrect number of args. Needs to be even: (ID, points)")
 	}
 
 	//fill the db from args
 	for index := 0; index < len(args); index += 2{
-		userID = args[index]
-		pointsToAdd, err = strconv.Atoi(args[index + 1])
-		if err != nil {
-	    		return nil, errors.New("Expecting integer value for initial points")
-	    	}
-		entityObj := entity{}
-		entityObj.ThankList = []thank{}
-		entityObj.Balance = pointsToAdd
-		entityObj.UserID = userID
+	userID = args[index]
+	pointsToAdd, err = strconv.Atoi(args[index + 1])
+	if err != nil {
+	return nil, errors.New("Expecting integer value for initial points")
+	}
+	entityObj := entity{}
+	keyListObj := keyList{}
+	if index != 0 {
+	//get list of keys from ledger
+	keysJSON, err := stub.GetState("keys")
+	if keysJSON == nil || err != nil {
+	return nil, errors.New("Cannot get user list data from chain.")
+	}
+	err = json.Unmarshal(keysJSON, &keyListObj)
+	if err != nil {
+	return nil, errors.New("Invalid keys JSON")
+	}
+	}
 
-		//convert struct to JSON
-		entityJson, err := json.Marshal(entityObj)
-		if err != nil || entityJson == nil {
-			return nil, errors.New("Converting entity struct to JSON failed")
-		}
+	entityObj.UserID = userID
+	//keyListObj.AddKey(userID)
+	//keyListObj.Keys = append(keyListObj.Keys, userID)
 
-		//write attributes into ledger
-		err = stub.PutState(userID, entityJson)
-		if err != nil {
-			fmt.Printf("Error: could not update ledger")
-			return nil, err
-		}
+
+	entityObj.UserID = userID
+	keyListObj.Keys = append(keyListObj.Keys, userID)
+	entityObj.ThankList = []thank{}
+	entityObj.Balance = pointsToAdd
+
+	//convert entity struct to entityJSON
+	entityJson, err := json.Marshal(entityObj)
+	if err != nil || entityJson == nil {
+	return nil, errors.New("Converting entity struct to entityJSON failed")
+	}
+
+	//write entity attributes into ledger
+	err = stub.PutState(userID, entityJson)
+	if err != nil {
+	fmt.Printf("Error: could not update ledger")
+	return nil, err
+	}
+
+	//convert keylist struct to keyListJSON
+	keyListJson, err := json.Marshal(keyListObj)
+	if err != nil || keyListJson == nil {
+	return nil, errors.New("Converting entity struct to keyListJSON failed")
+	}
+
+	//write keylist into ledger
+	err = stub.PutState("keys", keyListJson)
+	if err != nil {
+	fmt.Printf("Error: could not update ledger")
+	return nil, err
+	}
 	}
 
 	fmt.Printf("Humanity points chaincode initialization ready.\n")
 	return nil, nil
-}
+	}
 
-//getRandomUser returns a random user (who is at a certain level).
-func (t *HumanityChaincode) getRandomUser(stub *shim.ChaincodeStub,function string,args []string) ([]byte, error) {
+	//getRandomUser returns a random user (who is at a certain level).
+	func (t *HumanityChaincode) getRandomUser(stub *shim.ChaincodeStub,function string,args []string) ([]byte, error) {
 	//set the source for generating a random number
 	source := rand.NewSource(time.Now().UnixNano())
 	random := rand.New(source)
@@ -100,17 +144,17 @@ func (t *HumanityChaincode) getRandomUser(stub *shim.ChaincodeStub,function stri
 	fmt.Print(random.Intn(100))
 
 	return nil,nil
-}
+	}
 
-//addThanks function enables user to receive a "thank", adds points according to the thank level, and adds the "thank"
-//to the person's thank list(name of "thanker", type and message).
-func (t *HumanityChaincode) addThanks(stub *shim.ChaincodeStub,function string, args []string) ([]byte, error) {
+	//addThanks function enables user to receive a "thank", adds points according to the thank level, and adds the "thank"
+	//to the person's thank list(name of "thanker", type and message).
+	func (t *HumanityChaincode) addThanks(stub *shim.ChaincodeStub,function string, args []string) ([]byte, error) {
 	var userID string
 	var pointsToAdd int
 
 	//check arguments number and type
 	if len(args) != 2 {
-		return nil, errors.New("Incorrect number of arguments. Expecting 2")
+	return nil, errors.New("Incorrect number of arguments. Expecting 2")
 	}
 	userID = args[0]
 	//convert JSON to struct
@@ -120,16 +164,16 @@ func (t *HumanityChaincode) addThanks(stub *shim.ChaincodeStub,function string, 
 
 	err := json.Unmarshal(thankJson, &thankObj)
 	if err != nil {
-		return nil, errors.New("Invalid thank JSON")
+	return nil, errors.New("Invalid thank JSON")
 	}
 
 	//simple sanity check (message part can be ""):
 	if thankObj.ThankType != "ta" && thankObj.ThankType != "thankyou" && thankObj.ThankType != "bigthanks"{
-		return nil, errors.New("Invalid thank type! Valids are: ta(1), thankyou(5), bigthanks(10)")
+	return nil, errors.New("Invalid thank type! Valids are: ta(1), thankyou(5), bigthanks(10)")
 	}
 
 	if thankObj.Thanker =="" {
-		return nil, errors.New("No thanker name!")
+	return nil, errors.New("No thanker name!")
 	}
 
 	//calculate how many points to add according to "thank level":
@@ -142,15 +186,14 @@ func (t *HumanityChaincode) addThanks(stub *shim.ChaincodeStub,function string, 
 	//get entity data from ledger:
 	entityJSON, err := stub.GetState(userID)
 	if entityJSON == nil {
-		return nil, errors.New("Error: No account exists for user.")
-
+	return nil, errors.New("Error: No account exists for user.")
 	}
 
 	//convert JSON to struct
 	entityObj := entity{}
 	err = json.Unmarshal(entityJSON, &entityObj)
 	if err != nil {
-		return nil, errors.New("Invalid entity data pulled from ledger.")
+	return nil, errors.New("Invalid entity data pulled from ledger.")
 	}
 
 	//add points:
@@ -163,53 +206,77 @@ func (t *HumanityChaincode) addThanks(stub *shim.ChaincodeStub,function string, 
 	entityJSON, err = json.Marshal(entityObj)
 
 	if err != nil || entityJSON == nil {
-		return nil, errors.New("Converting entity struct to JSON failed")
+	return nil, errors.New("Converting entity struct to JSON failed")
 	}
 
 	//write entity back to ledger
 	err = stub.PutState(userID, entityJSON)
 	if err != nil {
-		return nil, errors.New("Writing updated entity to ledger failed")
+	return nil, errors.New("Writing updated entity to ledger failed")
 	}
 	jsonResp := "{\"msg\": \"Thank added\"}"
 	fmt.Printf("Invoke Response:%s\n", jsonResp)
 	return []byte(jsonResp), nil
 
-}
+	}
 
-//Invoke function to invoke addThanks, and getRandomUser functions
-func (t *HumanityChaincode) Invoke(stub *shim.ChaincodeStub, function string, args []string) ([]byte, error) {
+	//Invoke function to invoke addThanks, and getRandomUser functions
+	func (t *HumanityChaincode) Invoke(stub *shim.ChaincodeStub, function string, args []string) ([]byte, error) {
 	if function == "addThanks" {
-		//Add points to a member
-		return t.addThanks(stub,function, args)
+	//Add points to a member
+	return t.addThanks(stub,function, args)
 	}else if function == "getRandomUser" {
-
-			return t.getRandomUser(stub,function, args)
-
+	return t.getRandomUser(stub,function, args)
 	}
 	return nil, errors.New("Received unknown function invocation")
-}
+	}
 
-//Query queries the ledger for a given ID and returns the whole JSON for the userID
-func (t *HumanityChaincode) Query(stub *shim.ChaincodeStub, function string, args []string) ([]byte, error) {
+	//getUser queries the ledger for a given ID and returns the whole JSON for the userID
+	func (t *HumanityChaincode) getUser(stub *shim.ChaincodeStub,function string,args []string) ([]byte, error) {
 	if len(args) != 1 {
-		return nil, errors.New("Invalid number of arguments, expected 1")
+	return nil, errors.New("Invalid number of arguments, expected 1")
 	}
 	userID := args[0]
 	//get user data from ledger
 	dataJson, err := stub.GetState(userID)
 	if dataJson == nil || err != nil {
-		return nil, errors.New("Cannot get user data from chain.")
+	return nil, errors.New("Cannot get user data from chain.")
 	}
 
 	fmt.Printf("Query Response: %s\n", dataJson)
 	return dataJson, nil
-}
-
-//main function to start chaincode
-func main() {
-	err := shim.Start(new(HumanityChaincode))
-	if err != nil {
-		fmt.Printf("Error starting Humanity chaincode: %s", err)
 	}
+
+	//getKeys queries the ledger for all user keys and returns it as a JSON
+	func (t *HumanityChaincode) getKeys(stub *shim.ChaincodeStub,function string,args []string) ([]byte, error) {
+	if len(args) != 0 {
+	return nil, errors.New("Invalid number of arguments, expected 0")
+	}
+	//get list of keys from ledger
+	keysJSON, err := stub.GetState("keys")
+	if keysJSON == nil || err != nil {
+	return nil, errors.New("Cannot user list data from chain.")
+	}
+
+	fmt.Printf("Query Response: %s\n", keysJSON)
+	return keysJSON, nil
+	}
+
+	//query function to return a user, or a list of all user's keys
+	func (t *HumanityChaincode) Query(stub *shim.ChaincodeStub, function string, args []string) ([]byte, error) {
+	if function == "getUser" {
+	//Add points to a member
+	return t.getUser(stub, function, args)
+	} else if function == "getKeys" {
+	return t.getKeys(stub, function, args)
+	}
+	return nil, errors.New("Received unknown function invocation")
+	}
+
+	//main function to start chaincode
+	func main() {
+		err := shim.Start(new(HumanityChaincode))
+		if err != nil {
+			fmt.Printf("Error starting Humanity chaincode: %s", err)
+		}
 }

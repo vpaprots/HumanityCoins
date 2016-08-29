@@ -1,4 +1,3 @@
-
 #!/bin/bash
 ################################################################################################
 #                                                                                              #
@@ -32,9 +31,6 @@ then
 	killall peer > /dev/null 2>&1
 	killall membersrvc > /dev/null 2>&1
 
-	echo Delete all previous values in Ledger Database... 
-	rm -rf /var/hyperledger/production
-	
 	echo Docker clean up:
 	docker stop $(docker ps -a -q)  > /dev/null 2>&1      #stop all containers
 	docker rm $(docker ps -a -q)  > /dev/null 2>&1 		#remove all containers
@@ -49,6 +45,12 @@ then
 	else
       		echo There were no previous log files.
     	fi
+	
+	sleep 5
+	#Delete all previous values in Ledger Database
+	rm -rf /var/hyperledger/production
+
+
 else 
     exit 1 
 fi
@@ -66,37 +68,37 @@ echo "Starting Membership and Security Server.."
 echo "Starting validating peers:"
 #VP0:
 echo "Starting HyperLedger Fabric Validating Peer 1/4"
-docker run --rm -p 30303:30303 --env-file $CCROOT/env/vp0.env hyperledger/fabric-peer peer node start > $CCROOT/logs/vp0.log 2>&1 &
+docker run --rm -p 0.0.0.0:30303:30303 --env-file $CCROOT/env/vp0.env hyperledger/fabric-peer peer node start > $CCROOT/logs/vp0.log 2>&1 &
 echo "Waiting for initialization..."
 sleep 10
 
 #VP1:
 echo "Starting HyperLedger Fabric Validating Peer 2/4"
-docker run --rm --env-file $CCROOT/env/vp1.env hyperledger/fabric-peer peer node start > $CCROOT/logs/vp1.log 2>&1 &
+docker run --rm --env-file $CCROOT/env/vp1.env hyperledger/fabric-peer peer node start  > $CCROOT/logs/vp1.log 2>&1 &
 echo "Waiting for initialization..."
 sleep 20
 
 #VP2:
 echo "Starting HyperLedger Fabric Validating Peer 3/4"
-docker run --rm --env-file $CCROOT/env/vp2.env hyperledger/fabric-peer peer node start > $CCROOT/logs/vp2.log 2>&1 &
+docker run --rm --env-file $CCROOT/env/vp2.env hyperledger/fabric-peer peer node start >  $CCROOT/logs/vp2.log 2>&1 &
 echo "Waiting for initialization..."
 sleep 10
 
 #VP3:
 echo "Starting HyperLedger Fabric Validating Peer 4/4"
-docker run --rm --env-file $CCROOT/env/vp3.env hyperledger/fabric-peer peer node start > $CCROOT/logs/vp3.log 2>&1 &
+docker run --rm --env-file $CCROOT/env/vp3.env hyperledger/fabric-peer peer node start >  $CCROOT/logs/vp3.log 2>&1 &
 echo "Waiting for initialization..."
 sleep 10
 
-#login JIM to deploy
-CORE_PEER_ADDRESS=0.0.0.0:30303 CORE_SECURITY_ENABLED=true CORE_SECURITY_PRIVACY=false peer network login jim -p 6avZQLwcUe9b
-sleep 10
+echo login JIM to deploy
+CORE_PEER_ADDRESS=0.0.0.0:30303 CORE_SECURITY_ENABLED=true CORE_SECURITY_PRIVACY=true peer network login jim -p 6avZQLwcUe9b
+sleep 5
 
 echo "deploying HumanityCoins chaincode:"
-CHAIN_NAME=`CORE_PEER_ADDRESS=0.0.0.0:30303 CORE_SECURITY_ENABLED=true CORE_SECURITY_PRIVACY=false peer chaincode deploy -u jim -p github.com/hyperledger/fabric/examples/chaincode/go/humanity -c '{"Function":"Init", "Args": ["Laszlo","100","Juci","100"]}'`
+CHAIN_NAME=`CORE_PEER_ADDRESS=0.0.0.0:30303 CORE_SECURITY_ENABLED=true CORE_SECURITY_PRIVACY=true peer chaincode deploy -u jim -p github.com/hyperledger/fabric/examples/chaincode/go/humanity -c '{"Function":"Init", "Args": ["Laszlo","100","Juci","100"]}'`
 
 #echo ex02
-#CHAIN_NAME=`CORE_PEER_ADDRESS=0.0.0.0:30303 CORE_SECURITY_ENABLED=true CORE_SECURITY_PRIVACY=false peer chaincode deploy -u jim -p github.com/hyperledger/fabric/examples/chaincode/go/chaincode_example02 -c '{"Function":"init", "Args": ["a","100", "b", "200"]}'`
+#CHAIN_NAME=`CORE_PEER_ADDRESS=0.0.0.0:30303 CORE_SECURITY_ENABLED=true CORE_SECURITY_PRIVACY=true peer chaincode deploy -u jim -p github.com/hyperledger/fabric/examples/chaincode/go/chaincode_example02 -c '{"Function":"init", "Args": ["a","100", "b", "200"]}'`
 
 
 #write chaincode hash to file
