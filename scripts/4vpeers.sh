@@ -68,34 +68,34 @@ echo "Starting Membership and Security Server.."
 echo "Starting validating peers:"
 #VP0:
 echo "Starting HyperLedger Fabric Validating Peer 1/4"
-docker run --rm -p 0.0.0.0:30303:30303 --env-file $CCROOT/env/vp0.env hyperledger/fabric-peer peer node start > $CCROOT/logs/vp0.log 2>&1 &
+docker run --rm -p 0.0.0.0:30303:30303 --env-file $CCROOT/env/vp0.env szlaci83/humanitycoins_peer peer node start > $CCROOT/logs/vp0.log 2>&1 &
 echo "Waiting for initialization..."
 sleep 10
 
 #VP1:
 echo "Starting HyperLedger Fabric Validating Peer 2/4"
-docker run --rm --env-file $CCROOT/env/vp1.env hyperledger/fabric-peer peer node start  > $CCROOT/logs/vp1.log 2>&1 &
+docker run --rm --env-file $CCROOT/env/vp1.env szlaci83/humanitycoins_peer peer node start  > $CCROOT/logs/vp1.log 2>&1 &
 echo "Waiting for initialization..."
 sleep 20
 
 #VP2:
 echo "Starting HyperLedger Fabric Validating Peer 3/4"
-docker run --rm --env-file $CCROOT/env/vp2.env hyperledger/fabric-peer peer node start >  $CCROOT/logs/vp2.log 2>&1 &
+docker run --rm --env-file $CCROOT/env/vp2.env szlaci83/humanitycoins_peer peer node start >  $CCROOT/logs/vp2.log 2>&1 &
 echo "Waiting for initialization..."
 sleep 10
 
 #VP3:
 echo "Starting HyperLedger Fabric Validating Peer 4/4"
-docker run --rm --env-file $CCROOT/env/vp3.env hyperledger/fabric-peer peer node start >  $CCROOT/logs/vp3.log 2>&1 &
+docker run --rm --env-file $CCROOT/env/vp3.env szlaci83/humanitycoins_peer peer node start >  $CCROOT/logs/vp3.log 2>&1 &
 echo "Waiting for initialization..."
-sleep 10
+#sleep 10
 
-echo login JIM to deploy
-CORE_PEER_ADDRESS=0.0.0.0:30303 CORE_SECURITY_ENABLED=true CORE_SECURITY_PRIVACY=true peer network login jim -p 6avZQLwcUe9b
-sleep 5
+#echo login JIM to deploy
+#CORE_PEER_ADDRESS=0.0.0.0:30303 CORE_SECURITY_ENABLED=true CORE_SECURITY_PRIVACY=true peer network login jim -p 6avZQLwcUe9b
+#sleep 2
 
-echo "deploying HumanityCoins chaincode:"
-CHAIN_NAME=`CORE_PEER_ADDRESS=0.0.0.0:30303 CORE_SECURITY_ENABLED=true CORE_SECURITY_PRIVACY=true peer chaincode deploy -u jim -p github.com/hyperledger/fabric/examples/chaincode/go/humanity -c '{"Function":"Init", "Args": ["Laszlo","100","Juci","100"]}'`
+#echo "deploying HumanityCoins chaincode:"
+#CHAIN_NAME=`CORE_PEER_ADDRESS=0.0.0.0:30303 CORE_SECURITY_ENABLED=true CORE_SECURITY_PRIVACY=true peer chaincode deploy -u jim -p github.com/hyperledger/fabric/examples/chaincode/go/humanity -c '{"Function":"Init", "Args": ["Laszlo","100","Juci","100"]}'`
 
 #echo ex02
 #CHAIN_NAME=`CORE_PEER_ADDRESS=0.0.0.0:30303 CORE_SECURITY_ENABLED=true CORE_SECURITY_PRIVACY=true peer chaincode deploy -u jim -p github.com/hyperledger/fabric/examples/chaincode/go/chaincode_example02 -c '{"Function":"init", "Args": ["a","100", "b", "200"]}'`

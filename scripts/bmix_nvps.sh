@@ -27,7 +27,7 @@ killall node > /dev/null 2>&1
 killall peer > /dev/null 2>&1 
 killall membersrvc > /dev/null 2>&1 echo 
 Delete all previous values in Ledger Database... 
-rm -rf /var/hyperledger/production/client
+rm -rf /var/hyperledger/production
 	
 echo Docker clean up: 
 docker stop $(docker ps -a -q) #stop all containers 
@@ -39,18 +39,11 @@ cd $HLDGPATH
 #Start non validating peers, each with its own .env file
 echo "Starting non validating peers:" 
 echo "Starting HyperLedger Fabric NON Validating Peer 1/2" 
-docker run --rm --env-file $CCROOT/env/nvp0.env szlaci83/humanitycoins_peer peer node start --logging-level=debug >  $CCROOT/logs/nvp0.log 2>&1 & 
+docker run --rm --env-file $CCROOT/env/bmix_conn_nvp0.env hyperledger/fabric-peer peer node start --logging-level=debug >  $CCROOT/logs/bmix_nvp0.log 2>&1 & 
 sleep 2 
 
 echo "Starting HyperLedger Fabric NON Validating Peer 2/2" 
-docker run --rm --env-file $CCROOT/env/nvp1.env szlaci83/humanitycoins_peer peer node start --logging-level=debug >  $CCROOT/logs/nvp1.log 2>&1 & 
+docker run --rm --env-file $CCROOT/env/bmix_conn_nvp1.env hyperledger/fabric-peer peer node start --logging-level=debug >  $CCROOT/logs/bmix_nvp1.log 2>&1 & 
 sleep 2 
 echo 
-
-echo login an auditor
-CORE_PEER_ADDRESS=172.17.0.2:30303 CORE_SECURITY_ENABLED=true CORE_SECURITY_PRIVACY=true peer network login test_auditor0 -p password0
-sleep 5
-
-
-
 echo Demo ready, users can log in using:
