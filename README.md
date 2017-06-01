@@ -7,7 +7,7 @@
 
 This application will demonstrate a HumanityCoins point system where users can honour each other with HumanityCoins. Later HumanityCoins can also be collected by wearable devices, or smart meters, rewarding people saving resources (electricity, water, gas) or living a healthy lifestyle reported by their wearable device. To avoid abuse of the system these points are audited by a tweeting auditor (using twitter). The HumanityCoins points can be used by companies and government bodies to reward people doing good to their communities, health and to the environment.
 
-#Some technical details:
+# Some technical details:
 
 Types of thanks:
 
@@ -27,7 +27,7 @@ Attributes of a thank:
 	2.ThankType (type of the thank small, medium, large) 
 	3.message (a small message explaining the thank, can be empty)
 
-#Project setup:
+# Project setup:
 In order to be able to try the project on your system, the hyperledger fabric needs to be set up:
 https://github.com/hyperledger/fabric/blob/master/docs/dev-setup/devenv.md
 
