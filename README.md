@@ -17,31 +17,38 @@ Types of thanks:
 	
 Attributes of a user:
 
-	1. userID (unique string, will be used as key)
-	2. balance (int, computed points from the type of thank)
-	3. thanklist (string slice (array), array of the thanks recieved by the user)
+	1. userID (unique string, used as primary key)
+	2. balance (int, sum of the calculated points from the type of thanks received)
+	3. thanklist (string array of the thanks recieved)
 
 Attributes of a thank:
 
 	1.Thanker (the name of the person giving the thank)
-	2.ThankType (type of the thank small, medium, large) 
+	2.ThankType (type of the thank small/ medium/ large) 
 	3.message (a small message explaining the thank, can be empty)
 
 # Project setup:
-In order to be able to try the project on your system, the hyperledger fabric needs to be set up:
-https://github.com/hyperledger/fabric/blob/master/docs/dev-setup/devenv.md
+To try out the project, follow the following guide to install the perequisits:
+https://hyperledger-fabric.readthedocs.io/en/latest/prereqs.html
 
-The project should be placed under /root directory.
-Once you set up the system, you can start the test script to verify the settings. 
-/tests/humanity_test.sh
+Using the following tutorial it can be deployed into a chaincode development docker network:
+https://hyperledger-fabric.readthedocs.io/en/latest/chaincode4ade.html
 
-You should get the following output:
-TESTS PASSED: 4/4
+## Replace the Terminal 2 and 3 parts with the following:
+### Terminal 2:
 
-Now you can start up your network of peers with HumanityCoins chaincode to serve the backend of the application.
-/scripts/4vpeers.sh
+cd humanity
+go build
 
-The script uses the dockerised version of the chaincode from :
-szlaci83/humanitycoins_peer
+CORE_PEER_ADDRESS=peer:7051 CORE_CHAINCODE_ID_NAME=mycc:0 ./humanity
 
-The backend of this application is running GoLang code on the 4 peer blockchain network on the mainframe, similar to IBM's High Security Bussiness Network. The front end application (a mobile app) can connect to this network via Rest API calls.
+### Terminal 3:
+docker exec -it cli bash
+
+peer chaincode install -p chaincodedev/chaincode/humanity -n mycc -v 0
+
+peer chaincode instantiate -n mycc -v 0 -c '{"Args":["alice","10", "bob","20"]}' -C myc
+
+peer chaincode invoke -n mycc -c '{"Function":"addThanks", "Args": ["bob","{\"name\":\"alice\",\"type\":\"thankyou\",\"message\":\"for being good\"}"]}' -C myc
+
+peer chaincode query -n mycc -c '{"Function":"getUser", "Args":["alice"]}' -C myc
