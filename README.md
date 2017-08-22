@@ -32,7 +32,12 @@ Attributes of a thank:
 To try out the project, follow the following guide to install the perequisits:
 https://hyperledger-fabric.readthedocs.io/en/latest/prereqs.html
 
-Using the following tutorial it can be deployed into a chaincode development docker network:
+
+Demo can be run with /demo/startFabric.sh script which starts up the relevant docker containers,
+deploys the chaincode and run an invoke method. 
+
+
+Alternatively it can be deployed into a chaincode development docker network:
 https://hyperledger-fabric.readthedocs.io/en/latest/chaincode4ade.html
 
 ## Replace the Terminal 2 and 3 parts with the following:
