@@ -39,6 +39,7 @@ https://hyperledger-fabric.readthedocs.io/en/latest/chaincode4ade.html
 ### Terminal 2:
 
 cd humanity
+
 go build
 
 CORE_PEER_ADDRESS=peer:7051 CORE_CHAINCODE_ID_NAME=mycc:0 ./humanity
