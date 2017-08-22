@@ -7,6 +7,7 @@
 
 This application will demonstrate a HumanityCoins point system where users can honour each other with HumanityCoins. Later HumanityCoins can also be collected by wearable devices, or smart meters, rewarding people saving resources (electricity, water, gas) or living a healthy lifestyle reported by their wearable device. To avoid abuse of the system these points are audited by a tweeting auditor (using twitter). The HumanityCoins points can be used by companies and government bodies to reward people doing good to their communities, health and to the environment.
 
+### NOTE: This version is compatible with Hyperledger v1.0 docker containers
 # Some technical details:
 
 Types of thanks:
