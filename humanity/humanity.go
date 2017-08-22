@@ -234,11 +234,11 @@ func (t *HumanityChaincode) Init(stub shim.ChaincodeStubInterface)  peer.Respons
 			// Add points to a member
 			result, err = t.addThanks(stub, args)
 		} else {
-		  err = fmt.Errorf("Received unknown function invocation")
+		  err = fmt.Errorf("Received unknown function invocation: %s", fn)
 		}
 
 		if err != nil {
-				 shim.Error(err.Error())
+				 return shim.Error(err.Error())
 			}
 			return shim.Success([]byte(result))
 	}
@@ -269,7 +269,7 @@ func (t *HumanityChaincode) Init(stub shim.ChaincodeStubInterface)  peer.Respons
 	  // get list of keys from ledger
 	  keysJSON, err := stub.GetState("keys")
 	  if keysJSON == nil || err != nil {
-	    return "", fmt.Errorf("Cannot user list data from chain.")
+	    return "", fmt.Errorf("Cannot get user list data from chain.")
 	  }
 
 	  fmt.Printf("Query Response: %s\n", keysJSON)
@@ -283,14 +283,13 @@ func (t *HumanityChaincode) Init(stub shim.ChaincodeStubInterface)  peer.Respons
 	  // Extract the function and args from the transaction proposal
 	  fn, args := stub.GetFunctionAndParameters()
 	  if fn == "getUser" {
-	     // Add points to a member
-	     result, err = t.getUser(stub, args)
+	    result, err = t.getUser(stub, args)
 	  } else if fn == "getKeys" {
 	     result, err = t.getKeys(stub, args)
 	  } else if fn == "getRandomUser" {
        result, err = t.getRandomUser(stub, args)
     } else {
-		   err = fmt.Errorf("Received unknown function invocation")
+		   err = fmt.Errorf("Received unknown function invocation: %s", fn)
 		}
 		if err != nil {
             return shim.Error(err.Error())
