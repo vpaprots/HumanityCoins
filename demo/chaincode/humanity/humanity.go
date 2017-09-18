@@ -235,6 +235,8 @@ func (t *HumanityChaincode) Init(stub shim.ChaincodeStubInterface)  peer.Respons
 			result, err = t.addThanks(stub, args)
 		} else if fn == "getUser" {
 	    result, err = t.getUser(stub, args)
+	  } else if fn == "addUser" {
+	    result, err = t.Init(stub, args)
 	  } else if fn == "getKeys" {
 	     result, err = t.getKeys(stub, args)
 	  } else if fn == "getRandomUser" {
