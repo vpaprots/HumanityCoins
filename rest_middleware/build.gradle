@@ -23,7 +23,7 @@ apply plugin: 'maven-publish'
 apply from: "$project.rootDir/release/release.gradle"
 
 version = ext.versionName
-group 'com.elementalconcept.aladdin'
+group 'com.laszloszoboszlai.humanitycoins'
 sourceCompatibility = 1.8
 def baseName = rootProject.name
 
@@ -48,10 +48,9 @@ repositories {
 }
 
 dependencies {
-    compile('org.springframework.cloud:spring-cloud-starter-eureka-server')
+   // compile('org.springframework.cloud:spring-cloud-starter-eureka-server')
     compile('org.springframework.boot:spring-boot-starter-logging')
     compile('biz.paluch.logging:logstash-gelf:1.11.1')
-	compile('org.apache.hadoop:hadoop-hdfs:2.6.5')
     testCompile('org.springframework.boot:spring-boot-starter-test')
 }
 
@@ -86,13 +85,6 @@ publishing {
     }
 
     repositories {
-        maven {
-            url "http://52.56.58.182:8081/repository/maven-aladdin-master/"
-            credentials {
-                username nexusUser
-                password nexusPassword
-            }
-        }
-    }
 
+        }
 }
