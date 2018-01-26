@@ -1,0 +1,134 @@
+import groovy.json.*
+
+def versionFile = file("./release/version.json")
+def versionJSON = getJSON(versionFile)
+def versionName = "${versionJSON.major}.${versionJSON.minor}.${versionJSON.revision}"
+def commitNumber = 0
+def git = ext.git.open(currentDir: projectDir)
+
+def getJSON(file) {
+    return new JsonSlurper().parseText(file.text)
+}
+
+task getCommitNumberSinceRelease {
+    def taggedVersion = git.describe()
+    taggedVersion = taggedVersion.split('-')
+    if(taggedVersion.size() > 1) {
+        commitNumber = taggedVersion[1]
+    }
+}
+
+ext.commitNumber = commitNumber
+project.ext.isSnapshotRelease = false
+ext.versionName = versionName
+
+task publishSnapshot {
+    doFirst {
+        project.ext.isSnapshotRelease = true
+    }
+}
+
+task releaseRevision {
+    doLast {
+        // Ensure our working copy is clean first
+        if (!git.status().isClean()) {
+            throw new GradleException("You must NOT have any changes in your working copy!")
+        }
+
+        // Update version code
+        versionJSON.buildNumber += 1
+        versionJSON.revision += 1
+        versionFile.write(new JsonBuilder(versionJSON).toPrettyString())
+
+        versionName = "${versionJSON.major}.${versionJSON.minor}.${versionJSON.revision}"
+
+        // Add changes
+        def changes = git.status().unstaged.getAllChanges()
+        git.add(update: true, patterns: changes)
+
+        // Commit
+        git.commit(message: "Prepare for Revision release")
+
+        // Push
+        git.push()
+
+        // Tag
+        git.tag.add(name: versionName, message: "Revision Release ${versionName}")
+
+        // Push Tag
+        git.push(tags: true)
+        println("NEW VERSION: " + versionName)
+
+    }
+}
+
+task releaseMinor {
+    doLast {
+        // Ensure our working copy is clean first
+        if (!git.status().isClean()) {
+            throw new GradleException("You must NOT have any changes in your working copy!")
+        }
+
+        // Update version code
+        versionJSON.buildNumber += 1
+        versionJSON.minor += 1
+        versionJSON.revision = 0
+        versionFile.write(new JsonBuilder(versionJSON).toPrettyString())
+
+        versionName = "${versionJSON.major}.${versionJSON.minor}"
+
+        // Add changes
+        def changes = git.status().unstaged.getAllChanges()
+        git.add(update: true, patterns: changes)
+
+        // Commit
+        git.commit(message: "Prepare for Minor release")
+
+        // Push
+        git.push()
+
+        // Tag
+        git.tag.add(name: versionName, message: "Minor Release ${versionName}")
+
+        // Push Tag
+        git.push(tags: true)
+        println("NEW VERSION: " + versionName)
+
+    }
+}
+
+task releaseMajor {
+    doLast {
+        // Ensure our working copy is clean first
+        if (!git.status().isClean()) {
+            throw new GradleException("You must NOT have any changes in your working copy!")
+        }
+
+        // Update version code
+        versionJSON.buildNumber += 1
+        versionJSON.major += 1
+        versionJSON.minor = 0
+        versionJSON.revision = 0
+        versionFile.write(new JsonBuilder(versionJSON).toPrettyString())
+
+        versionName = "${versionJSON.major}.${versionJSON.minor}"
+
+        // Add changes
+        def changes = git.status().unstaged.getAllChanges()
+        git.add(update: true, patterns: changes)
+
+        // Commit
+        git.commit(message: "Prepare for Major release")
+
+        // Push
+        git.push()
+
+        // Tag
+        git.tag.add(name: versionName, message: "Major Release ${versionName}")
+
+        // Push Tags
+        git.push(tags: true)
+        println("NEW VERSION: " + versionName)
+
+    }
+}

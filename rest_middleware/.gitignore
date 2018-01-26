@@ -1,0 +1,29 @@
+.gradle
+/build/
+!gradle/wrapper/gradle-wrapper.jar
+gradle.properties
+
+.idea
+*.iws
+*.iml
+*.ipr
+
+build/
+out/
+classes/
+logs/
+
+# VS Code ignores
+.classpath
+.project
+.settings/
+bin/
+.vscode/
+
+src/main/resources/application-default.properties
+
+classes
+lib
+
+### mac OS ###
+**/.DS_Store
